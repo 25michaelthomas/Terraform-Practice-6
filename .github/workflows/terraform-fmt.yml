@@ -1,1 +1,23 @@
-test
+name: Terraform format check          # shown in the Actions tab
+
+on:                                    # which events start this workflow
+  push:
+    branches: [main]
+  pull_request:                        # default: opened, synchronize, reopened
+
+permissions:                           # least-privilege token for the whole workflow
+  contents: read
+
+jobs:
+  fmt:                                 # job id — you reference it in needs:
+    name: terraform fmt
+    runs-on: ubuntu-latest             # GitHub-hosted runner, currently Ubuntu 24.04
+    steps:
+      - uses: actions/checkout@v7       # step 1: get the code onto the runner
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.13.x"
+
+      - name: Check formatting
+        run: terraform fmt -check -recursive
