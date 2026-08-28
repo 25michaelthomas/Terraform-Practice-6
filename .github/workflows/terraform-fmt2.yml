@@ -4,24 +4,53 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "Target environment"
         type: choice
-        options: [dev, staging, prod]
+        options: [dev,prod,staging]
         required: true
       action:
         type: choice
-        options: [plan, apply, destroy]
-        default: plan
-      auto_approve:
-        type: boolean
-        default: false
+        options: [creating,building,destroying]
+        required: true
 
 jobs:
-  terraform:
+  echo:
+    name: echo_test
+    environment: ${{inputs.environment}}
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}   # picks up that env's secrets + protection rules
     steps:
-      - run: echo "Running ${{ inputs.action }} against ${{ inputs.environment }}"
+      - run: echo "this test is ${{inputs.action}} the ${{inputs.environment}} environment"
+
+
+
+
+
+
+      
+
+
+
+# on:
+#   workflow_dispatch:
+#     inputs:
+#       environment:
+#         description: "Target environment"
+#         type: choice
+#         options: [dev, staging, prod]
+#         required: true
+#       action:
+#         type: choice
+#         options: [plan, apply, destroy]
+#         default: plan
+#       auto_approve:
+#         type: boolean
+#         default: false
+
+# jobs:
+#   terraform:
+#     runs-on: ubuntu-latest
+#     environment: ${{ inputs.environment }}   # picks up that env's secrets + protection rules
+#     steps:
+#       - run: echo "Running ${{ inputs.action }} against ${{ inputs.environment }}"
 
 
 
