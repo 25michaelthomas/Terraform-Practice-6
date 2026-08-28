@@ -21,5 +21,3 @@ jobs:
 
       - name: Check formatting
         run: terraform fmt -check -recursive
-
-  plan:
