@@ -1,30 +1,67 @@
-name: Terraform Format Checker
+name: input workflow
 
 on:
-  push:
-    branches: [main]
-    # paths: 
-    #   - "./terraform/**"
-    #   - "./github/workflows/terraform-fmt2.yml"
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        type: choice
+        options: [dev, staging, prod]
+        required: true
+      action:
+        type: choice
+        options: [plan, apply, destroy]
+        default: plan
+      auto_approve:
+        type: boolean
+        default: false
 
-permissions:
-  id-token: write
-  contents: read
-
-
-jobs: 
-  fmt:
-    name: terraform fmt check
+jobs:
+  terraform:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}   # picks up that env's secrets + protection rules
     steps:
-      - uses: aws-actions/configure-aws-credentials@v5
-        with:
-          role-to-assume: ${{vars.PLAN_ROLE_ARN}}
-          aws-region: us-east-1
+      - run: echo "Running ${{ inputs.action }} against ${{ inputs.environment }}"
 
-      - run: aws sts get-caller-identity
+
+
+
+
+# name: Terraform Format Checker
+
+# on:
+#   push:
+#     branches: [main]
+#     # paths: 
+#     #   - "./terraform/**"
+#     #   - "./github/workflows/terraform-fmt2.yml"
+#   pull_request:
+#     branches: [main]
+
+# permissions:
+#   id-token: write
+#   contents: read
+
+
+# jobs: 
+#   fmt:
+#     name: terraform fmt check
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: aws-actions/configure-aws-credentials@v5
+#         with:
+#           role-to-assume: ${{vars.PLAN_ROLE_ARN}}
+#           aws-region: us-east-1
+
+#       - run: aws sts get-caller-identity
+
+#       - uses: actions/checkout@v7
+
+#       - uses: hashicorp/setup-terraform@v3
+#         with: 
+#           terraform_version: "1.13.x"
+
+#       - run: terraform fmt -check -recursive
 
 
 
