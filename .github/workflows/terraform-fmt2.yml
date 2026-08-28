@@ -1,0 +1,32 @@
+name: Terraform workflow
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  fmt:
+    name: format-job
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.13.x"
+
+      - run: terraform fmt -check -recursive
+
+
+
+
+
+
+
+
+
+
