@@ -1,4 +1,4 @@
-name: Terraform workflow
+name: Terraform Format Checker
 
 on:
   push:
@@ -6,20 +6,29 @@ on:
   pull_request:
 
 permissions:
+  id-token: write
   contents: read
 
 jobs:
   fmt:
-    name: format-job
+    name: terraform fmt check
     runs-on: ubuntu-latest
     steps:
+      - uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{vars.PLAN_ROLE_ARN}}
+          aws-region: us-east-1
+      - run: aws sts get-caller-identity
+
       - uses: actions/checkout@v7
 
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.13.x"
 
-      - run: terraform fmt -check -recursive
+      - name: terraform fmt
+        run: terraform fmt -check -recursive
+
 
 
 
