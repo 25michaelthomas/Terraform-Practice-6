@@ -39,6 +39,45 @@ jobs:
           scan-ref: terraform
           exit-code: "1"                # fail the job on findings
           severity: HIGH,CRITICAL
+  plan:
+    name: plan
+    needs: checks
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+    defaults:
+      run:
+        working-directory: terraform
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: hashicorp/setup-terraform@v3
+        with: 
+          terraform_version: "1.13.x"
+          terraform_wrapper: false
+
+      - uses: aws-actions/configure-aws-credentials@v5
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{vars.PLAN_ROLE_ARN}}
+
+      - run: terraform init
+
+      - name: plan
+        id: plan
+        run: |
+          terraform plan -no-color -out=tfplan | tee plan.txt
+          # write a collapsible summary to the run's Summary page
+          {
+            echo "## Terraform plan"
+            echo '```'
+            tail -c 60000 plan.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
 
 
 
