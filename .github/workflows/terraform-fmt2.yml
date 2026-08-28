@@ -3,7 +3,11 @@ name: Terraform Format Checker
 on:
   push:
     branches: [main]
+    paths: 
+      - "./terraform/**"
+      - "./github/workflows/terraform-fmt2.yml"
   pull_request:
+    branches: [main]
 
 permissions:
   id-token: write
@@ -18,7 +22,6 @@ jobs:
         with:
           role-to-assume: ${{vars.PLAN_ROLE_ARN}}
           aws-region: us-east-1
-      - run: aws sts get-caller-identity
 
       - uses: actions/checkout@v7
 
