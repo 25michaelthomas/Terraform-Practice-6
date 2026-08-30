@@ -50,6 +50,8 @@ jobs:
     defaults:
       run:
         working-directory: terraform
+    outputs:
+      has_changes: ${{steps.plan.outputs.has_changes}}
 
     steps:
       - uses: actions/checkout@v5
@@ -69,7 +71,15 @@ jobs:
       - name: plan
         id: plan
         run: |
-          terraform plan -no-color -out=tfplan | tee plan.txt
+          set +e
+          terraform plan -no-color -out=tfplan -detailed-exitcode | tee plan.txt
+          code=${PIPESTATUS[0]}
+          set -e
+          case "$code" in
+            0) echo "has_changes=false" >> "$GITHUB_OUTPUT" ;;
+            2) echo "has_changes=true"  >> "$GITHUB_OUTPUT" ;;
+            *) exit "$code" ;;
+          esac
           # write a collapsible summary to the run's Summary page
           {
             echo "## Terraform plan"
