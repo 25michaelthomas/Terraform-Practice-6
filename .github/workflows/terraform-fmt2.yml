@@ -2,7 +2,18 @@ name: Check and plan workflow
 
 on:
   push:
+    branches: [main]
+    paths: ["terraform/**", ".github/workflows/terraform.yml"]
   pull_request:
+    branches: [main]
+    paths: ["terraform/**", ".github/workflows/terraform.yml"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: terraform-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   checks:
@@ -121,7 +132,7 @@ jobs:
   apply:
     name: apply
     needs: plan
-    if: github.event_name == 'push' && needs.plan.outputs.has_changes == 'true' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && needs.plan.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
     environment: prod
     permissions:
@@ -149,8 +160,8 @@ jobs:
           name: tfplan-${{github.sha}}
           path: terraform
 
-      - run: terraform init
-      - run: terraform apply -no-color tfplan
+      - run: terraform init -lock-timeout=5m
+      - run: terraform apply -lock-timeout=5m -no-color tfplan
 
 
 
