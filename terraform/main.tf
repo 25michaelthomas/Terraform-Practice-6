@@ -23,6 +23,6 @@ provider "aws" {
   region = "us-east-1"
 }
 
-resource "aws_s3_bucket" "github-actions" {
-  bucket = "8696-tfpractice-github-actions"
+resource "aws_vpc" "github-actions" {
+  region = "us-east-1"
 }
