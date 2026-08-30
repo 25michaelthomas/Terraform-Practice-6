@@ -22,3 +22,7 @@ terraform {
 provider "aws" {
   region = "us-east-1"
 }
+
+resource "s3" "github-actions" {
+  bucket = "8696-tfpractice-github-actions"
+}
