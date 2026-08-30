@@ -3,10 +3,10 @@ name: Check and plan workflow
 on:
   push:
     branches: [main]
-    paths: ["terraform/**", ".github/workflows/terraform.yml"]
+    paths: ["terraform/**", ".github/workflows/terraform-fmt2.yml"]
   pull_request:
     branches: [main]
-    paths: ["terraform/**", ".github/workflows/terraform.yml"]
+    paths: ["terraform/**", ".github/workflows/terraform-fmt2.yml"]
 
 permissions:
   contents: read
