@@ -13,7 +13,7 @@ terraform {
   backend "s3" {
     bucket       = "8696-tfstate-portfolio"
     key          = "app4/terraform.tfstate"
-    region       = "us-east-1"
+    region       = "us-east-"
     use_lockfile = true
     encrypt      = true
   }
