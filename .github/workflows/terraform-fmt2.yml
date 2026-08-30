@@ -2,7 +2,18 @@ name: Check and plan workflow
 
 on:
   push:
+    branches: [main]
+    paths: ["terraform/**", ".github/workflows/terraform-fmt2.yml"]
   pull_request:
+    branches: [main]
+    paths: ["terraform/**", ".github/workflows/terraform-fmt2.yml"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: terraform-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   checks:
@@ -50,6 +61,8 @@ jobs:
     defaults:
       run:
         working-directory: terraform
+    outputs:
+      has_changes: ${{steps.plan.outputs.has_changes}}
 
     steps:
       - uses: actions/checkout@v5
@@ -69,7 +82,15 @@ jobs:
       - name: plan
         id: plan
         run: |
-          terraform plan -no-color -out=tfplan | tee plan.txt
+          set +e
+          terraform plan -no-color -out=tfplan -detailed-exitcode | tee plan.txt
+          code=${PIPESTATUS[0]}
+          set -e
+          case "$code" in
+            0) echo "has_changes=false" >> "$GITHUB_OUTPUT" ;;
+            2) echo "has_changes=true"  >> "$GITHUB_OUTPUT" ;;
+            *) exit "$code" ;;
+          esac
           # write a collapsible summary to the run's Summary page
           {
             echo "## Terraform plan"
@@ -100,6 +121,47 @@ jobs:
               issue_number: context.issue.number,
               body,
             });
+
+      - name: Save plan for apply
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with: 
+          name: tfplan-${{github.sha}}
+          path: terraform/tfplan
+          retention-days: 1
+  apply:
+    name: apply
+    needs: plan
+    if: github.event_name == 'push' && needs.plan.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    environment: prod
+    permissions:
+      id-token: write
+      contents: read
+    defaults:
+      run:
+        working-directory: terraform
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+        
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.13.x'
+          terraform_wrapper: false
+
+      - uses: aws-actions/configure-aws-credentials@v5
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{vars.APPLY_ROLE_ARN}}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: tfplan-${{github.sha}}
+          path: terraform
+
+      - run: terraform init -lock-timeout=5m
+      - run: terraform apply -lock-timeout=5m -no-color tfplan
 
 
 
